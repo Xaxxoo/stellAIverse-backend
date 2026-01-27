@@ -7,18 +7,26 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Get("health")
-  getHealth() {
+  getHealth(): { status: string; timestamp: string } {
     return this.appService.getHealth();
   }
 
   @Get("info")
-  getInfo() {
+  getInfo(): {
+    name: string;
+    version: string;
+    description: string;
+    modules: string[];
+  } {
     return this.appService.getInfo();
   }
 
   @UseGuards(JwtAuthGuard)
   @Get("protected")
-  getProtected(@Request() req): any {
+  getProtected(@Request() req: any): {
+    message: string;
+    userAddress: string;
+  } {
     return {
       message: "This is a protected endpoint",
       userAddress: req.user.address,

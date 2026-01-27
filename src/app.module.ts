@@ -14,7 +14,8 @@ import { EmailVerification } from "./auth/entities/email-verification.entity";
 import { ThrottlerModule } from "@nestjs/throttler";
 import { APP_GUARD } from "@nestjs/core";
 import { ThrottlerUserIpGuard } from "./common/guard/throttler.guard";
-import { WebSocketModule } from './websocket/websocket.module';
+import { WebSocketModule } from "./websocket/websocket.module";
+import { ObservabilityModule } from "./observability/observability.module";
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { WebSocketModule } from './websocket/websocket.module';
     RecommendationModule,
     ComputeModule,
     WebSocketModule,
+    ObservabilityModule,
   ],
   controllers: [AppController],
   providers: [
