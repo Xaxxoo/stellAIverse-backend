@@ -8,9 +8,14 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { ProfileModule } from './profile/profile.module';
+import { AgentModule } from './agent/agent.module';
+import { RecommendationModule } from './recommendation/recommendation.module';
 import { ComputeModule } from './compute/compute.module';
 import { User } from './user/entities/user.entity';
 import { EmailVerification } from './auth/entities/email-verification.entity';
+import { ThrottlerUserIpGuard } from './common/guard/throttler.guard';
+import { WebSocketModule } from './websocket/websocket.module';
+import { ObservabilityModule } from './observability/observability.module';
 
 @Module({
   imports: [
@@ -30,10 +35,11 @@ import { EmailVerification } from './auth/entities/email-verification.entity';
       },
     }),
     // Rate Limiting - Global protection against brute force and DoS
-    ThrottlerModule.forRoot([{
-      ttl: 60000, // Time window in milliseconds (1 minute)
-      limit: 100, // Max requests per TTL per IP
-    }]),
+    ThrottlerModule.forRoot({
+      throttlers: [
+        { name: 'global', ttl: 60_000, limit: 100 }, // 100 req/min per IP
+      ],
+    }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -62,15 +68,19 @@ import { EmailVerification } from './auth/entities/email-verification.entity';
     AuthModule,
     UserModule,
     ProfileModule,
+    AgentModule,
+    RecommendationModule,
     ComputeModule,
+    WebSocketModule,
+    ObservabilityModule,
   ],
   controllers: [AppController],
   providers: [
     AppService,
-    // Apply rate limiting globally
+    // Apply rate limiting globally with IP-based throttling
     {
       provide: APP_GUARD,
-      useClass: ThrottlerGuard,
+      useClass: ThrottlerUserIpGuard,
     },
   ],
 })

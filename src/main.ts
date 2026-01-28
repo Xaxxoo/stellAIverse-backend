@@ -2,8 +2,19 @@ import { NestFactory } from "@nestjs/core";
 import { ValidationPipe } from "@nestjs/common";
 import { AppModule } from "./app.module";
 import * as helmet from "helmet";
+import { logger } from "./config/logger";
 
 async function bootstrap() {
+  // Initialize tracing safely
+  try {
+    const { startTracing } = await import("./config/tracing");
+    await startTracing();
+    logger.info("Tracing initialized");
+  } catch (error) {
+    logger.warn({ error: error.message }, "Tracing skipped");
+  }
+
+  // Create app with appropriate logging
   const app = await NestFactory.create(AppModule, {
     logger:
       process.env.NODE_ENV === "production"
@@ -69,22 +80,21 @@ async function bootstrap() {
   const port = process.env.PORT || 3000;
   await app.listen(port);
 
-  if (process.env.NODE_ENV !== "production") {
-    console.log(
-      `🚀 Application is running on: http://localhost:${port}/api/v1`,
-    );
-  }
+  logger.info(`🚀 Application running on http://localhost:${port}/api/v1`);
 }
 
-bootstrap();
+bootstrap().catch((error) => {
+  logger.error({ error }, "Bootstrap failed");
+  process.exit(1);
+});
 
 // Handle uncaught exceptions
 process.on("uncaughtException", (error: Error) => {
-  console.error("Uncaught Exception:", error);
+  logger.error({ error }, "Uncaught Exception");
   process.exit(1);
 });
 
 process.on("unhandledRejection", (reason: any) => {
-  console.error("Unhandled Rejection:", reason);
+  logger.error({ reason }, "Unhandled Rejection");
   process.exit(1);
 });
