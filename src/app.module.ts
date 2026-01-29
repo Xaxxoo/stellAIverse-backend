@@ -11,6 +11,8 @@ import { RecommendationModule } from "./recommendation/recommendation.module";
 import { ComputeModule } from "./compute/compute.module";
 import { User } from "./user/entities/user.entity";
 import { EmailVerification } from "./auth/entities/email-verification.entity";
+import { IndexedEvent } from "./indexer/entities/indexed-event.entity";
+import { IndexerModule } from "./indexer/indexer.module";
 import { ThrottlerModule } from "@nestjs/throttler";
 import { APP_GUARD } from "@nestjs/core";
 import { ThrottlerUserIpGuard } from "./common/guard/throttler.guard";
@@ -28,7 +30,7 @@ import { ObservabilityModule } from "./observability/observability.module";
       url:
         process.env.DATABASE_URL ||
         "postgresql://stellaiverse:password@localhost:5432/stellaiverse",
-      entities: [User, EmailVerification],
+      entities: [User, EmailVerification, IndexedEvent],
       synchronize: process.env.NODE_ENV !== "production", // Auto-sync in development
       logging: process.env.NODE_ENV === "development",
     }),
@@ -45,6 +47,7 @@ import { ObservabilityModule } from "./observability/observability.module";
     ComputeModule,
     WebSocketModule,
     ObservabilityModule,
+    IndexerModule,
   ],
   controllers: [AppController],
   providers: [
